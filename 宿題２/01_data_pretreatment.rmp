@@ -1,0 +1,729 @@
+<?xml version="1.0" encoding="UTF-8"?><process version="9.3.001">
+  <context>
+    <input/>
+    <output/>
+    <macros/>
+  </context>
+  <operator activated="true" class="process" compatibility="9.3.001" expanded="true" name="Process">
+    <parameter key="logverbosity" value="init"/>
+    <parameter key="random_seed" value="2001"/>
+    <parameter key="send_mail" value="never"/>
+    <parameter key="notification_email" value=""/>
+    <parameter key="process_duration_for_mail" value="30"/>
+    <parameter key="encoding" value="SYSTEM"/>
+    <process expanded="true">
+      <operator activated="true" class="retrieve" compatibility="9.3.001" expanded="true" height="68" name="Retrieve taxi_pretreatment" width="90" x="45" y="136">
+        <parameter key="repository_entry" value="taxi_pretreatment"/>
+      </operator>
+      <operator activated="true" class="select_attributes" compatibility="9.3.001" expanded="true" height="82" name="Select Attributes (2)" width="90" x="45" y="289">
+        <parameter key="attribute_filter_type" value="subset"/>
+        <parameter key="attribute" value=""/>
+        <parameter key="attributes" value="distance|dropoff_latitude|dropoff_longitude|fare_amount|passenger_count|pickup_datetime_day|pickup_datetime_hour|pickup_latitude|pickup_longitude"/>
+        <parameter key="use_except_expression" value="false"/>
+        <parameter key="value_type" value="attribute_value"/>
+        <parameter key="use_value_type_exception" value="false"/>
+        <parameter key="except_value_type" value="time"/>
+        <parameter key="block_type" value="attribute_block"/>
+        <parameter key="use_block_type_exception" value="false"/>
+        <parameter key="except_block_type" value="value_matrix_row_start"/>
+        <parameter key="invert_selection" value="false"/>
+        <parameter key="include_special_attributes" value="false"/>
+      </operator>
+      <operator activated="true" class="set_role" compatibility="9.3.001" expanded="true" height="82" name="Set Role" origin="GENERATED_TUTORIAL" width="90" x="45" y="442">
+        <parameter key="attribute_name" value="fare_amount"/>
+        <parameter key="target_role" value="label"/>
+        <list key="set_additional_roles"/>
+        <description align="center" color="transparent" colored="false" width="126">Choosing 'Age' as the label.</description>
+      </operator>
+      <operator activated="true" class="nominal_to_numerical" compatibility="9.3.001" expanded="true" height="103" name="Nominal to Numerical" origin="GENERATED_TUTORIAL" width="90" x="179" y="289">
+        <parameter key="return_preprocessing_model" value="false"/>
+        <parameter key="create_view" value="false"/>
+        <parameter key="attribute_filter_type" value="all"/>
+        <parameter key="attribute" value=""/>
+        <parameter key="attributes" value=""/>
+        <parameter key="use_except_expression" value="false"/>
+        <parameter key="value_type" value="nominal"/>
+        <parameter key="use_value_type_exception" value="false"/>
+        <parameter key="except_value_type" value="file_path"/>
+        <parameter key="block_type" value="single_value"/>
+        <parameter key="use_block_type_exception" value="false"/>
+        <parameter key="except_block_type" value="single_value"/>
+        <parameter key="invert_selection" value="false"/>
+        <parameter key="include_special_attributes" value="false"/>
+        <parameter key="coding_type" value="dummy coding"/>
+        <parameter key="use_comparison_groups" value="false"/>
+        <list key="comparison_groups"/>
+        <parameter key="unexpected_value_handling" value="all 0 and warning"/>
+        <parameter key="use_underscore_in_name" value="false"/>
+      </operator>
+      <operator activated="true" class="normalize" compatibility="9.3.001" expanded="true" height="103" name="Normalize" width="90" x="179" y="442">
+        <parameter key="return_preprocessing_model" value="false"/>
+        <parameter key="create_view" value="false"/>
+        <parameter key="attribute_filter_type" value="all"/>
+        <parameter key="attribute" value=""/>
+        <parameter key="attributes" value=""/>
+        <parameter key="use_except_expression" value="false"/>
+        <parameter key="value_type" value="numeric"/>
+        <parameter key="use_value_type_exception" value="false"/>
+        <parameter key="except_value_type" value="real"/>
+        <parameter key="block_type" value="value_series"/>
+        <parameter key="use_block_type_exception" value="false"/>
+        <parameter key="except_block_type" value="value_series_end"/>
+        <parameter key="invert_selection" value="false"/>
+        <parameter key="include_special_attributes" value="false"/>
+        <parameter key="method" value="Z-transformation"/>
+        <parameter key="min" value="0.0"/>
+        <parameter key="max" value="1.0"/>
+        <parameter key="allow_negative_values" value="false"/>
+      </operator>
+      <operator activated="true" class="series:windowing" compatibility="7.4.000" expanded="true" height="82" name="Windowing" width="90" x="179" y="595">
+        <parameter key="series_representation" value="encode_series_by_examples"/>
+        <parameter key="window_size" value="6800"/>
+        <parameter key="step_size" value="1"/>
+        <parameter key="create_single_attributes" value="true"/>
+        <parameter key="create_label" value="true"/>
+        <parameter key="select_label_by_dimension" value="false"/>
+        <parameter key="label_attribute" value="fare_amount"/>
+        <parameter key="horizon" value="1"/>
+        <parameter key="add_incomplete_windows" value="false"/>
+        <parameter key="stop_on_too_small_dataset" value="true"/>
+      </operator>
+      <operator activated="true" class="split_data" compatibility="9.3.001" expanded="true" height="103" name="Split Data" origin="GENERATED_TUTORIAL" width="90" x="313" y="187">
+        <enumeration key="partitions">
+          <parameter key="ratio" value="0.7"/>
+          <parameter key="ratio" value="0.3"/>
+        </enumeration>
+        <parameter key="sampling_type" value="automatic"/>
+        <parameter key="use_local_random_seed" value="false"/>
+        <parameter key="local_random_seed" value="1992"/>
+      </operator>
+      <operator activated="true" class="keras:sequential" compatibility="1.0.003" expanded="true" height="166" name="Keras Model MLP" width="90" x="447" y="34">
+        <parameter key="input shape" value="(6800,3)"/>
+        <parameter key="loss" value="mean_squared_error"/>
+        <parameter key="optimizer" value="Adam"/>
+        <parameter key="learning rate" value="0.01"/>
+        <parameter key="momentum" value="0.0"/>
+        <parameter key="rho" value="0.9"/>
+        <parameter key="beta 1" value="0.999"/>
+        <parameter key="beta 2" value="0.999"/>
+        <parameter key="epsilon" value="1.0E-8"/>
+        <parameter key="decay" value="0.0"/>
+        <parameter key="schedule decay" value="0.004"/>
+        <parameter key="Nesterov" value="false"/>
+        <parameter key="use metric" value="true"/>
+        <enumeration key="metric"/>
+        <parameter key="epochs" value="3"/>
+        <parameter key="batch size" value="32"/>
+        <enumeration key="callbacks">
+          <parameter key="callbacks" value="TensorBoard(log_dir='C:/rapidminer/keras/log', histogram_freq=0, write_graph=True, write_images=False, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None)"/>
+        </enumeration>
+        <parameter key="verbose" value="1"/>
+        <parameter key="validation split" value="0.0"/>
+        <parameter key="shuffle" value="false"/>
+        <parameter key="fix seed" value="false"/>
+        <parameter key="random seed" value="0"/>
+        <process expanded="true">
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (7)" width="90" x="45" y="85">
+            <parameter key="layer_type" value="Dense"/>
+            <parameter key="no_units" value="1024"/>
+            <parameter key="activation_function" value="'relu'"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.25"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (5)" width="90" x="45" y="238">
+            <parameter key="layer_type" value="Dropout"/>
+            <parameter key="no_units" value="1"/>
+            <parameter key="activation_function" value="None"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.2"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (9)" width="90" x="179" y="85">
+            <parameter key="layer_type" value="Dense"/>
+            <parameter key="no_units" value="256"/>
+            <parameter key="activation_function" value="'relu'"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.25"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (6)" width="90" x="179" y="238">
+            <parameter key="layer_type" value="Dropout"/>
+            <parameter key="no_units" value="1"/>
+            <parameter key="activation_function" value="None"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.2"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (10)" width="90" x="380" y="85">
+            <parameter key="layer_type" value="Dense"/>
+            <parameter key="no_units" value="64"/>
+            <parameter key="activation_function" value="'relu'"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.25"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (12)" width="90" x="380" y="238">
+            <parameter key="layer_type" value="Dropout"/>
+            <parameter key="no_units" value="1"/>
+            <parameter key="activation_function" value="None"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.2"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (11)" width="90" x="581" y="85">
+            <parameter key="layer_type" value="Dense"/>
+            <parameter key="no_units" value="16"/>
+            <parameter key="activation_function" value="'relu'"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.25"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (13)" width="90" x="581" y="238">
+            <parameter key="layer_type" value="Dropout"/>
+            <parameter key="no_units" value="1"/>
+            <parameter key="activation_function" value="None"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.2"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (8)" width="90" x="782" y="85">
+            <parameter key="layer_type" value="Dense"/>
+            <parameter key="no_units" value="1"/>
+            <parameter key="activation_function" value="'linear'"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.25"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <connect from_op="Add Core Layer (7)" from_port="layers 1" to_op="Add Core Layer (5)" to_port="layers"/>
+          <connect from_op="Add Core Layer (5)" from_port="layers 1" to_op="Add Core Layer (9)" to_port="layers"/>
+          <connect from_op="Add Core Layer (9)" from_port="layers 1" to_op="Add Core Layer (6)" to_port="layers"/>
+          <connect from_op="Add Core Layer (6)" from_port="layers 1" to_op="Add Core Layer (10)" to_port="layers"/>
+          <connect from_op="Add Core Layer (10)" from_port="layers 1" to_op="Add Core Layer (12)" to_port="layers"/>
+          <connect from_op="Add Core Layer (12)" from_port="layers 1" to_op="Add Core Layer (11)" to_port="layers"/>
+          <connect from_op="Add Core Layer (11)" from_port="layers 1" to_op="Add Core Layer (13)" to_port="layers"/>
+          <connect from_op="Add Core Layer (13)" from_port="layers 1" to_op="Add Core Layer (8)" to_port="layers"/>
+          <connect from_op="Add Core Layer (8)" from_port="layers 1" to_port="layers 1"/>
+          <portSpacing port="sink_layers 1" spacing="0"/>
+          <portSpacing port="sink_layers 2" spacing="0"/>
+        </process>
+      </operator>
+      <operator activated="false" class="keras:sequential" compatibility="1.0.003" expanded="true" height="166" name="Keras Model CNN" width="90" x="849" y="340">
+        <parameter key="input shape" value="(30,8)"/>
+        <parameter key="loss" value="mean_squared_error"/>
+        <parameter key="optimizer" value="Adam"/>
+        <parameter key="learning rate" value="0.01"/>
+        <parameter key="momentum" value="0.0"/>
+        <parameter key="rho" value="0.9"/>
+        <parameter key="beta 1" value="0.999"/>
+        <parameter key="beta 2" value="0.999"/>
+        <parameter key="epsilon" value="1.0E-8"/>
+        <parameter key="decay" value="0.0"/>
+        <parameter key="schedule decay" value="0.004"/>
+        <parameter key="Nesterov" value="false"/>
+        <parameter key="use metric" value="false"/>
+        <enumeration key="metric"/>
+        <parameter key="epochs" value="3"/>
+        <parameter key="batch size" value="32"/>
+        <enumeration key="callbacks">
+          <parameter key="callbacks" value="TensorBoard(log_dir='C:/rapidminer/keras/log', histogram_freq=0, write_graph=True, write_images=False, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None)"/>
+        </enumeration>
+        <parameter key="verbose" value="1"/>
+        <parameter key="validation split" value="0.0"/>
+        <parameter key="shuffle" value="false"/>
+        <parameter key="fix seed" value="false"/>
+        <parameter key="random seed" value="0"/>
+        <process expanded="true">
+          <operator activated="true" class="keras:conv_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Convolutional Layer (5)" width="90" x="112" y="85">
+            <parameter key="layer_type" value="Conv1D"/>
+            <parameter key="filters" value="64"/>
+            <parameter key="kernel_size_1d" value="2"/>
+            <parameter key="kernel_size_2d" value="1.1"/>
+            <parameter key="kernel_size_3d" value="1.1.1"/>
+            <parameter key="strides_1d" value="1"/>
+            <parameter key="strides_2d" value="1.1"/>
+            <parameter key="strides_3d" value="1.1.1"/>
+            <parameter key="padding" value="valid"/>
+            <parameter key="padding_1d" value="1.1"/>
+            <parameter key="padding_2d" value="((1, 1), (1, 1))"/>
+            <parameter key="padding_3d" value="((1, 1), (1, 1), (1, 1))"/>
+            <parameter key="cropping_1d" value="1.1"/>
+            <parameter key="cropping_2d" value="((1, 1), (1, 1))"/>
+            <parameter key="cropping_3d" value="((1, 1), (1, 1), (1, 1))"/>
+            <parameter key="size_1d" value="2"/>
+            <parameter key="size_2d" value="2.2"/>
+            <parameter key="size_3d" value="2.2.2"/>
+            <parameter key="data_format" value="'channels_last'"/>
+            <parameter key="dilation_rate_1d" value="1"/>
+            <parameter key="dilation_rate_2d" value="1.1"/>
+            <parameter key="dilation_rate_3d" value="1.1.1"/>
+            <parameter key="depth_multiplier" value="1"/>
+            <parameter key="activation_function" value="None"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="depthwise_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="pointwise_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="depthwise_regularizer" value="None"/>
+            <parameter key="pointwise_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="depthwise_constraint" value="None"/>
+            <parameter key="pointwise_constraint" value="None"/>
+          </operator>
+          <operator activated="true" class="keras:pooling_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Pooling Layer" width="90" x="112" y="238">
+            <parameter key="layer_type" value="MaxPooling1D"/>
+            <parameter key="pool_size_1d" value="2"/>
+            <parameter key="pool_size_2d" value="2.2"/>
+            <parameter key="pool_size_3d" value="2.2.2"/>
+            <parameter key="strides_1d" value="2"/>
+            <parameter key="strides_2d" value="2.2"/>
+            <parameter key="strides_3d" value="2.2.2"/>
+            <parameter key="padding" value="valid"/>
+            <parameter key="data_format" value="None"/>
+          </operator>
+          <operator activated="true" class="keras:conv_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Convolutional Layer (6)" width="90" x="313" y="85">
+            <parameter key="layer_type" value="Conv1D"/>
+            <parameter key="filters" value="64"/>
+            <parameter key="kernel_size_1d" value="2"/>
+            <parameter key="kernel_size_2d" value="1.1"/>
+            <parameter key="kernel_size_3d" value="1.1.1"/>
+            <parameter key="strides_1d" value="1"/>
+            <parameter key="strides_2d" value="1.1"/>
+            <parameter key="strides_3d" value="1.1.1"/>
+            <parameter key="padding" value="valid"/>
+            <parameter key="padding_1d" value="1.1"/>
+            <parameter key="padding_2d" value="((1, 1), (1, 1))"/>
+            <parameter key="padding_3d" value="((1, 1), (1, 1), (1, 1))"/>
+            <parameter key="cropping_1d" value="1.1"/>
+            <parameter key="cropping_2d" value="((1, 1), (1, 1))"/>
+            <parameter key="cropping_3d" value="((1, 1), (1, 1), (1, 1))"/>
+            <parameter key="size_1d" value="2"/>
+            <parameter key="size_2d" value="2.2"/>
+            <parameter key="size_3d" value="2.2.2"/>
+            <parameter key="data_format" value="'channels_last'"/>
+            <parameter key="dilation_rate_1d" value="1"/>
+            <parameter key="dilation_rate_2d" value="1.1"/>
+            <parameter key="dilation_rate_3d" value="1.1.1"/>
+            <parameter key="depth_multiplier" value="1"/>
+            <parameter key="activation_function" value="None"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="depthwise_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="pointwise_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="depthwise_regularizer" value="None"/>
+            <parameter key="pointwise_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="depthwise_constraint" value="None"/>
+            <parameter key="pointwise_constraint" value="None"/>
+          </operator>
+          <operator activated="true" class="keras:pooling_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Pooling Layer (2)" width="90" x="313" y="238">
+            <parameter key="layer_type" value="MaxPooling1D"/>
+            <parameter key="pool_size_1d" value="2"/>
+            <parameter key="pool_size_2d" value="2.2"/>
+            <parameter key="pool_size_3d" value="2.2.2"/>
+            <parameter key="strides_1d" value="2"/>
+            <parameter key="strides_2d" value="2.2"/>
+            <parameter key="strides_3d" value="2.2.2"/>
+            <parameter key="padding" value="valid"/>
+            <parameter key="data_format" value="None"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer" width="90" x="514" y="85">
+            <parameter key="layer_type" value="Dropout"/>
+            <parameter key="no_units" value="1"/>
+            <parameter key="activation_function" value="None"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.25"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (2)" width="90" x="514" y="238">
+            <parameter key="layer_type" value="Flatten"/>
+            <parameter key="no_units" value="1"/>
+            <parameter key="activation_function" value="None"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.25"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (3)" width="90" x="648" y="136">
+            <parameter key="layer_type" value="Dense"/>
+            <parameter key="no_units" value="250"/>
+            <parameter key="activation_function" value="'relu'"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.25"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <operator activated="true" class="keras:core_layer" compatibility="1.0.003" expanded="true" height="82" name="Add Core Layer (4)" width="90" x="782" y="136">
+            <parameter key="layer_type" value="Dense"/>
+            <parameter key="no_units" value="1"/>
+            <parameter key="activation_function" value="'linear'"/>
+            <parameter key="use_bias" value="true"/>
+            <parameter key="kernel_initializer" value="glorot_uniform(seed=None)"/>
+            <parameter key="bias_initializer" value="Zeros()"/>
+            <parameter key="kernel_regularizer" value="None"/>
+            <parameter key="bias_regularizer" value="None"/>
+            <parameter key="activity_regularizer" value="None"/>
+            <parameter key="kernel_constraint" value="None"/>
+            <parameter key="bias_constraint" value="None"/>
+            <parameter key="rate" value="0.25"/>
+            <parameter key="noise_shape" value="None"/>
+            <parameter key="seed" value="None"/>
+            <parameter key="target_shape" value=""/>
+            <parameter key="dims" value="1.1"/>
+            <parameter key="repetition_factor" value="1"/>
+            <parameter key="function" value="None"/>
+            <parameter key="l1" value="0.0"/>
+            <parameter key="l2" value="0.0"/>
+            <parameter key="mask_value" value="0.0"/>
+          </operator>
+          <connect from_op="Add Convolutional Layer (5)" from_port="layers 1" to_op="Add Pooling Layer" to_port="layers"/>
+          <connect from_op="Add Pooling Layer" from_port="layers 1" to_op="Add Convolutional Layer (6)" to_port="layers"/>
+          <connect from_op="Add Convolutional Layer (6)" from_port="layers 1" to_op="Add Pooling Layer (2)" to_port="layers"/>
+          <connect from_op="Add Pooling Layer (2)" from_port="layers 1" to_op="Add Core Layer" to_port="layers"/>
+          <connect from_op="Add Core Layer" from_port="layers 1" to_op="Add Core Layer (2)" to_port="layers"/>
+          <connect from_op="Add Core Layer (2)" from_port="layers 1" to_op="Add Core Layer (3)" to_port="layers"/>
+          <connect from_op="Add Core Layer (3)" from_port="layers 1" to_op="Add Core Layer (4)" to_port="layers"/>
+          <connect from_op="Add Core Layer (4)" from_port="layers 1" to_port="layers 1"/>
+          <portSpacing port="sink_layers 1" spacing="0"/>
+          <portSpacing port="sink_layers 2" spacing="0"/>
+        </process>
+      </operator>
+      <operator activated="true" class="keras:apply" compatibility="1.0.003" expanded="true" height="82" name="Apply Keras Model" width="90" x="581" y="187">
+        <parameter key="batch_size" value="32"/>
+        <parameter key="verbose" value="0"/>
+      </operator>
+      <operator activated="false" class="deeplearning:dl4j_sequential_neural_network" compatibility="0.9.001" expanded="true" height="103" name="Deep Learning" width="90" x="648" y="595">
+        <parameter key="loss_function" value="Mean Squared Error (Linear Regression)"/>
+        <parameter key="epochs" value="100"/>
+        <parameter key="use_miniBatch" value="false"/>
+        <parameter key="batch_size" value="32"/>
+        <parameter key="updater" value="Adam"/>
+        <parameter key="learning_rate" value="0.01"/>
+        <parameter key="momentum" value="0.9"/>
+        <parameter key="rho" value="0.95"/>
+        <parameter key="epsilon" value="1.0E-6"/>
+        <parameter key="beta1" value="0.9"/>
+        <parameter key="beta2" value="0.999"/>
+        <parameter key="RMSdecay" value="0.95"/>
+        <parameter key="weight_initialization" value="ReLU"/>
+        <parameter key="bias_initialization" value="0.0"/>
+        <parameter key="use_regularization" value="false"/>
+        <parameter key="l1_strength" value="0.1"/>
+        <parameter key="l2_strength" value="0.1"/>
+        <parameter key="optimization_method" value="Stochastic Gradient Descent"/>
+        <parameter key="backpropagation" value="Standard"/>
+        <parameter key="backpropagation_length" value="50"/>
+        <parameter key="infer_input_shape" value="true"/>
+        <parameter key="network_type" value="Simple Neural Network"/>
+        <parameter key="log_each_epoch" value="true"/>
+        <parameter key="epochs_per_log" value="10"/>
+        <parameter key="use_local_random_seed" value="false"/>
+        <parameter key="local_random_seed" value="1992"/>
+        <process expanded="true">
+          <operator activated="true" class="deeplearning:dl4j_convolutional_layer" compatibility="0.9.001" expanded="true" height="68" name="Add Convolutional Layer" width="90" x="112" y="85">
+            <parameter key="number_of_activation_maps" value="1024"/>
+            <parameter key="kernel_size" value="2.2"/>
+            <parameter key="stride_size" value="1.1"/>
+            <parameter key="activation_function" value="ReLU (Rectified Linear Unit)"/>
+            <parameter key="use_dropout" value="false"/>
+            <parameter key="dropout_rate" value="0.2"/>
+            <parameter key="overwrite_networks_weight_initialization" value="false"/>
+            <parameter key="weight_initialization" value="Normal"/>
+            <parameter key="overwrite_networks_bias_initialization" value="false"/>
+            <parameter key="bias_initialization" value="0.0"/>
+          </operator>
+          <operator activated="true" class="deeplearning:dl4j_convolutional_layer" compatibility="0.9.001" expanded="true" height="68" name="Add Convolutional Layer (2)" width="90" x="313" y="85">
+            <parameter key="number_of_activation_maps" value="256"/>
+            <parameter key="kernel_size" value="2.2"/>
+            <parameter key="stride_size" value="1.1"/>
+            <parameter key="activation_function" value="ReLU (Rectified Linear Unit)"/>
+            <parameter key="use_dropout" value="false"/>
+            <parameter key="dropout_rate" value="0.2"/>
+            <parameter key="overwrite_networks_weight_initialization" value="false"/>
+            <parameter key="weight_initialization" value="Normal"/>
+            <parameter key="overwrite_networks_bias_initialization" value="false"/>
+            <parameter key="bias_initialization" value="0.0"/>
+          </operator>
+          <operator activated="true" class="deeplearning:dl4j_convolutional_layer" compatibility="0.9.001" expanded="true" height="68" name="Add Convolutional Layer (3)" width="90" x="514" y="85">
+            <parameter key="number_of_activation_maps" value="64"/>
+            <parameter key="kernel_size" value="2.2"/>
+            <parameter key="stride_size" value="1.1"/>
+            <parameter key="activation_function" value="ReLU (Rectified Linear Unit)"/>
+            <parameter key="use_dropout" value="false"/>
+            <parameter key="dropout_rate" value="0.2"/>
+            <parameter key="overwrite_networks_weight_initialization" value="false"/>
+            <parameter key="weight_initialization" value="Normal"/>
+            <parameter key="overwrite_networks_bias_initialization" value="false"/>
+            <parameter key="bias_initialization" value="0.0"/>
+          </operator>
+          <operator activated="true" class="deeplearning:dl4j_convolutional_layer" compatibility="0.9.001" expanded="true" height="68" name="Add Convolutional Layer (4)" width="90" x="715" y="85">
+            <parameter key="number_of_activation_maps" value="16"/>
+            <parameter key="kernel_size" value="2.2"/>
+            <parameter key="stride_size" value="1.1"/>
+            <parameter key="activation_function" value="ReLU (Rectified Linear Unit)"/>
+            <parameter key="use_dropout" value="false"/>
+            <parameter key="dropout_rate" value="0.2"/>
+            <parameter key="overwrite_networks_weight_initialization" value="false"/>
+            <parameter key="weight_initialization" value="Normal"/>
+            <parameter key="overwrite_networks_bias_initialization" value="false"/>
+            <parameter key="bias_initialization" value="0.0"/>
+          </operator>
+          <operator activated="true" class="deeplearning:dl4j_dense_layer" compatibility="0.9.001" expanded="true" height="68" name="Add Fully-Connected Layer (3)" origin="GENERATED_TUTORIAL" width="90" x="849" y="85">
+            <parameter key="number_of_neurons" value="1"/>
+            <parameter key="activation_function" value="None (identity)"/>
+            <parameter key="use_dropout" value="false"/>
+            <parameter key="dropout_rate" value="0.25"/>
+            <parameter key="overwrite_networks_weight_initialization" value="false"/>
+            <parameter key="weight_initialization" value="Normal"/>
+            <parameter key="overwrite_networks_bias_initialization" value="false"/>
+            <parameter key="bias_initialization" value="0.0"/>
+            <description align="center" color="transparent" colored="false" width="126">Number of neurons = 1 because one value is estimated. And &amp;quot;None (Identity)&amp;quot; is chosen because a regression is performed.</description>
+          </operator>
+          <connect from_port="layerArchitecture" to_op="Add Convolutional Layer" to_port="layerArchitecture"/>
+          <connect from_op="Add Convolutional Layer" from_port="layerArchitecture" to_op="Add Convolutional Layer (2)" to_port="layerArchitecture"/>
+          <connect from_op="Add Convolutional Layer (2)" from_port="layerArchitecture" to_op="Add Convolutional Layer (3)" to_port="layerArchitecture"/>
+          <connect from_op="Add Convolutional Layer (3)" from_port="layerArchitecture" to_op="Add Convolutional Layer (4)" to_port="layerArchitecture"/>
+          <connect from_op="Add Convolutional Layer (4)" from_port="layerArchitecture" to_op="Add Fully-Connected Layer (3)" to_port="layerArchitecture"/>
+          <connect from_op="Add Fully-Connected Layer (3)" from_port="layerArchitecture" to_port="layerArchitecture"/>
+          <portSpacing port="source_layerArchitecture" spacing="0"/>
+          <portSpacing port="sink_layerArchitecture" spacing="0"/>
+        </process>
+      </operator>
+      <operator activated="false" class="apply_model" compatibility="9.3.001" expanded="true" height="82" name="Apply Model" origin="GENERATED_TUTORIAL" width="90" x="782" y="595">
+        <list key="application_parameters"/>
+        <parameter key="create_view" value="false"/>
+      </operator>
+      <operator activated="true" class="performance_regression" compatibility="9.3.001" expanded="true" height="82" name="Performance" origin="GENERATED_TUTORIAL" width="90" x="715" y="136">
+        <parameter key="main_criterion" value="first"/>
+        <parameter key="root_mean_squared_error" value="false"/>
+        <parameter key="absolute_error" value="false"/>
+        <parameter key="relative_error" value="true"/>
+        <parameter key="relative_error_lenient" value="false"/>
+        <parameter key="relative_error_strict" value="false"/>
+        <parameter key="normalized_absolute_error" value="false"/>
+        <parameter key="root_relative_squared_error" value="false"/>
+        <parameter key="squared_error" value="true"/>
+        <parameter key="correlation" value="true"/>
+        <parameter key="squared_correlation" value="true"/>
+        <parameter key="prediction_average" value="false"/>
+        <parameter key="spearman_rho" value="false"/>
+        <parameter key="kendall_tau" value="false"/>
+        <parameter key="skip_undefined_labels" value="true"/>
+        <parameter key="use_example_weights" value="true"/>
+      </operator>
+      <operator activated="true" class="store" compatibility="9.3.001" expanded="true" height="68" name="Store (6)" width="90" x="849" y="187">
+        <parameter key="repository_entry" value="DL_table"/>
+      </operator>
+      <operator activated="true" class="store" compatibility="9.3.001" expanded="true" height="68" name="Store (5)" width="90" x="849" y="85">
+        <parameter key="repository_entry" value="DL_performance"/>
+      </operator>
+      <connect from_op="Retrieve taxi_pretreatment" from_port="output" to_op="Select Attributes (2)" to_port="example set input"/>
+      <connect from_op="Select Attributes (2)" from_port="example set output" to_op="Set Role" to_port="example set input"/>
+      <connect from_op="Set Role" from_port="example set output" to_op="Nominal to Numerical" to_port="example set input"/>
+      <connect from_op="Nominal to Numerical" from_port="example set output" to_op="Normalize" to_port="example set input"/>
+      <connect from_op="Normalize" from_port="example set output" to_op="Windowing" to_port="example set input"/>
+      <connect from_op="Windowing" from_port="example set output" to_op="Split Data" to_port="example set"/>
+      <connect from_op="Split Data" from_port="partition 1" to_op="Keras Model MLP" to_port="training set"/>
+      <connect from_op="Split Data" from_port="partition 2" to_op="Apply Keras Model" to_port="unlabelled data"/>
+      <connect from_op="Keras Model MLP" from_port="model" to_op="Apply Keras Model" to_port="model"/>
+      <connect from_op="Apply Keras Model" from_port="labelled data" to_op="Performance" to_port="labelled data"/>
+      <connect from_op="Apply Keras Model" from_port="model" to_port="result 3"/>
+      <connect from_op="Performance" from_port="performance" to_op="Store (5)" to_port="input"/>
+      <connect from_op="Performance" from_port="example set" to_op="Store (6)" to_port="input"/>
+      <connect from_op="Store (6)" from_port="through" to_port="result 2"/>
+      <connect from_op="Store (5)" from_port="through" to_port="result 1"/>
+      <portSpacing port="source_input 1" spacing="0"/>
+      <portSpacing port="sink_result 1" spacing="0"/>
+      <portSpacing port="sink_result 2" spacing="0"/>
+      <portSpacing port="sink_result 3" spacing="0"/>
+      <portSpacing port="sink_result 4" spacing="0"/>
+    </process>
+  </operator>
+</process>
